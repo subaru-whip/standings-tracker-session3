@@ -1,0 +1,16 @@
+{
+  "teams": [
+    { "members": ["Laura", "Sophie", "Maddie"] },
+    { "members": ["Kristi", "Emily", "Lauren"] },
+    { "members": ["Maddy", "Glenn", "Joe"] },
+    { "members": ["Marissa", "Talia", "Tom"] },
+    { "members": ["Jen", "Seleia", "Kyana"] },
+    { "members": ["Marcelinton", "Sy", "Katie"] },
+    { "members": ["JP", "Carolyn", "Tam"] },
+    { "members": ["Calder", "Dan", "Jefferson"] },
+    { "members": ["Amy", "Ally", "Skye"] },
+    { "members": ["Norman", "Bill", "Luke"] }
+  ],
+  "aliases": {},
+  "adjustments": {}
+}
