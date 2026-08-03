@@ -27,6 +27,19 @@ class TestParser(unittest.TestCase):
         self.assertEqual(p.date, "7/13")
         self.assertTrue(p.date_from_filename)
 
+    def test_redundant_leading_iso_date_stripped(self):
+        p = self.parse("2026-08-01 - 8.1 - Norman - Bunk IMG_4626.jpeg")
+        self.assertEqual(p.person, "Norman")
+        self.assertEqual(p.department, "Bunk")
+        self.assertEqual(p.date, "8/1")
+
+    def test_lolo_alias_with_leading_iso_date(self):
+        p = self.parse("2026-08-02 - 8[]02 - LOLO - airport IMG_3651.jpeg")
+        self.assertEqual(p.person, "Laura")
+        self.assertIsNone(p.unmatched_guess)
+        self.assertEqual(p.department, "airport")
+        self.assertEqual(p.date, "8/2")
+
     def test_no_space_dash_format(self):
         p = self.parse("7.13-Kyana-RPG 20260713_094953.jpg")
         self.assertEqual(p.person, "Kyana")

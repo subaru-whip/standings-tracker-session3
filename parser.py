@@ -24,6 +24,11 @@ MEDIA_ID_RE = re.compile(
 # Tolerates "7.13" (clean) and "07[]12" (broken separator seen in real data).
 DATE_RE = re.compile(r"\b(\d{1,2})[.\[\]]+(\d{1,2})\b")
 
+# Some Session 3 filenames carry a redundant leading ISO date, e.g.
+# "2026-08-01 - 8.1 - Name - Dept IMG_1234.jpg" — strip it before parsing so
+# it doesn't leak into the department field or get picked as unmatched_guess.
+ISO_DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\s*-\s*")
+
 NON_WORD_RE = re.compile(r"[^A-Za-z0-9]+")
 
 
@@ -55,6 +60,7 @@ def parse_filename(filename: str, roster: Roster, mtime: float) -> ParsedPhoto:
     media_match = MEDIA_ID_RE.search(cleaned_stem)
     blob = cleaned_stem[: media_match.start()] if media_match else cleaned_stem
     blob = blob.strip(" -")
+    blob = ISO_DATE_PREFIX_RE.sub("", blob, count=1)
 
     date_match = DATE_RE.search(blob)
     if date_match:
