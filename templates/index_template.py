@@ -11,12 +11,12 @@ def _team_heading(members):
     return ", ".join(members[:-1]) + " & " + members[-1]
 
 
-def _member_rows(team, roster_max_count):
+def _member_rows(team):
     rows = []
     sorted_members = sorted(team.members, key=lambda m: team.counts[m], reverse=True)
     for member in sorted_members:
         count = team.counts[member]
-        pct = 0 if roster_max_count == 0 else round((count / roster_max_count) * 100)
+        pct = 0 if team.total == 0 else round((count / team.total) * 100)
         pct = max(pct, 4) if count > 0 else 0
         rows.append(
             f'<div class="member-row">'
@@ -28,7 +28,7 @@ def _member_rows(team, roster_max_count):
     return "\n".join(rows)
 
 
-def _team_card(rank, team, roster_max_count):
+def _team_card(rank, team):
     card_class = f" rank-{rank + 1}" if rank in RANK_LABELS else ""
     badge = f'<div class="rank-badge">{RANK_LABELS[rank]}</div>' if rank in RANK_LABELS else ""
     heading = _team_heading(team.members)
@@ -39,7 +39,7 @@ def _team_card(rank, team, roster_max_count):
   <div class="total">{team.total} <span>photo{'s' if team.total != 1 else ''}</span></div>
   <details>
     <summary>Member breakdown</summary>
-    {_member_rows(team, roster_max_count)}
+    {_member_rows(team)}
   </details>
 </div>"""
 
@@ -65,11 +65,8 @@ def _unmatched_section(unmatched):
 
 
 def render(aggregate_result, generated_at_str):
-    roster_max_count = max(
-        (max(team.counts.values(), default=0) for team in aggregate_result.teams), default=0
-    )
     cards = "\n".join(
-        _team_card(rank, team, roster_max_count)
+        _team_card(rank, team)
         for rank, team in enumerate(aggregate_result.teams)
     )
     unmatched_html = _unmatched_section(aggregate_result.unmatched)

@@ -1,7 +1,7 @@
 :root {
-  --header-bg: #ff7db0;
+  --header-bg: #9dfb6e;
   --cyan: #00e5ff;
-  --pink: #ff1e8e;
+  --heading-shadow: #23c93f;
   --sky: #a5d4e6;
   --ink: #0a0a0a;
   --paper: #ffffff;
@@ -45,7 +45,7 @@ header.hero h1 {
     3px -3px 0 var(--ink),
     -3px 3px 0 var(--ink),
     3px 3px 0 var(--ink),
-    7px 7px 0 var(--pink);
+    7px 7px 0 var(--heading-shadow);
 }
 
 header.hero .stats-badge {

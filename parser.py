@@ -22,12 +22,14 @@ MEDIA_ID_RE = re.compile(
 )
 
 # Tolerates "7.13" (clean) and "07[]12" (broken separator seen in real data).
+# Only used as a fallback for filenames without the leading upload-date stamp below.
 DATE_RE = re.compile(r"\b(\d{1,2})[.\[\]]+(\d{1,2})\b")
 
-# Some Session 3 filenames carry a redundant leading ISO date, e.g.
-# "2026-08-01 - 8.1 - Name - Dept IMG_1234.jpg" — strip it before parsing so
-# it doesn't leak into the department field or get picked as unmatched_guess.
-ISO_DATE_PREFIX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\s*-\s*")
+# Every Session 3 filename is stamped with its exact upload date as the first
+# thing in the name, e.g. "2026-08-01 - 8.1 - Name - Dept IMG_1234.jpg". This is
+# authoritative — any other date-looking text elsewhere in the filename (typos,
+# stale phone defaults, etc.) is ignored rather than used or trusted.
+UPLOAD_DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})\s*-\s*")
 
 NON_WORD_RE = re.compile(r"[^A-Za-z0-9]+")
 
@@ -60,20 +62,27 @@ def parse_filename(filename: str, roster: Roster, mtime: float) -> ParsedPhoto:
     media_match = MEDIA_ID_RE.search(cleaned_stem)
     blob = cleaned_stem[: media_match.start()] if media_match else cleaned_stem
     blob = blob.strip(" -")
-    blob = ISO_DATE_PREFIX_RE.sub("", blob, count=1)
 
-    date_match = DATE_RE.search(blob)
-    if date_match:
-        month, day = int(date_match.group(1)), int(date_match.group(2))
+    upload_date_match = UPLOAD_DATE_RE.match(blob)
+    if upload_date_match:
+        month, day = int(upload_date_match.group(2)), int(upload_date_match.group(3))
         date_str = f"{month}/{day}"
         date_from_filename = True
-        blob = blob[: date_match.start()] + blob[date_match.end():]
+        blob = blob[upload_date_match.end():]
+        blob = DATE_RE.sub(" ", blob)  # scrub any other date-looking text; it's not trusted
     else:
-        import datetime
+        date_match = DATE_RE.search(blob)
+        if date_match:
+            month, day = int(date_match.group(1)), int(date_match.group(2))
+            date_str = f"{month}/{day}"
+            date_from_filename = True
+            blob = blob[: date_match.start()] + blob[date_match.end():]
+        else:
+            import datetime
 
-        dt = datetime.datetime.fromtimestamp(mtime)
-        date_str = f"{dt.month}/{dt.day}"
-        date_from_filename = False
+            dt = datetime.datetime.fromtimestamp(mtime)
+            date_str = f"{dt.month}/{dt.day}"
+            date_from_filename = False
 
     normalized = _normalize(blob)
 

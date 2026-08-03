@@ -27,13 +27,20 @@ class TestParser(unittest.TestCase):
         self.assertEqual(p.date, "7/13")
         self.assertTrue(p.date_from_filename)
 
-    def test_redundant_leading_iso_date_stripped(self):
+    def test_leading_upload_date_is_authoritative(self):
         p = self.parse("2026-08-01 - 8.1 - Norman - Bunk IMG_4626.jpeg")
         self.assertEqual(p.person, "Norman")
         self.assertEqual(p.department, "Bunk")
         self.assertEqual(p.date, "8/1")
+        self.assertTrue(p.date_from_filename)
 
-    def test_lolo_alias_with_leading_iso_date(self):
+    def test_mismatched_embedded_date_is_ignored_in_favor_of_upload_date(self):
+        p = self.parse("2026-08-01 - 7.15 - Norman - Bunk IMG_9999.jpeg")
+        self.assertEqual(p.person, "Norman")
+        self.assertEqual(p.department, "Bunk")
+        self.assertEqual(p.date, "8/1")
+
+    def test_lolo_alias_with_leading_upload_date(self):
         p = self.parse("2026-08-02 - 8[]02 - LOLO - airport IMG_3651.jpeg")
         self.assertEqual(p.person, "Laura")
         self.assertIsNone(p.unmatched_guess)
