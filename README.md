@@ -55,8 +55,10 @@ every matching file, past and future:
 
 All present fields in a rule must match (case-insensitive for
 `filename_contains`); omit a field to not filter on it. Excluded files never
-count toward anyone's total, but stay visible on the live page in the
-"Excluded — manual rule" panel for auditing.
+count toward anyone's total. They're not shown anywhere on the public page —
+run `python3 scan.py` and check the "excluded" number in the console output
+(or `result.excluded` in a script) if you need to audit which files a rule
+caught.
 
 ## Running manually
 
