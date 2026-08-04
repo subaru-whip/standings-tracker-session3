@@ -2,7 +2,7 @@
   "teams": [
     { "members": ["Laura", "Sophie", "Maddie"] },
     { "members": ["Kristi", "Emily", "Lauren"] },
-    { "members": ["Maddy", "Glenn"] },
+    { "members": ["Maddy", "Glenn", "Gia"] },
     { "members": ["Marissa", "Talia", "Tom"] },
     { "members": ["Jen", "Seleia", "Kyana"] },
     { "members": ["Marcelinton", "Sy", "Katie"] },
@@ -12,7 +12,8 @@
     { "members": ["Norman", "Luke", "Joe"] }
   ],
   "aliases": {
-    "LOLO": "Laura"
+    "LOLO": "Laura",
+    "KC": "Kristi"
   },
   "adjustments": {}
 }
