@@ -64,12 +64,32 @@ def _unmatched_section(unmatched):
 </details>"""
 
 
+def _excluded_section(excluded):
+    if not excluded:
+        return ""
+    items = []
+    for photo in excluded:
+        items.append(
+            f"<li><code>{html.escape(photo.filename)}</code> "
+            f"&mdash; {html.escape(photo.person)}, department: {html.escape(photo.department)}, "
+            f"date: {photo.date}</li>"
+        )
+    return f"""
+<details class="unmatched-panel">
+  <summary>Excluded files &mdash; manual rule ({len(excluded)})</summary>
+  <ul>
+    {''.join(items)}
+  </ul>
+</details>"""
+
+
 def render(aggregate_result, generated_at_str):
     cards = "\n".join(
         _team_card(rank, team)
         for rank, team in enumerate(aggregate_result.teams)
     )
     unmatched_html = _unmatched_section(aggregate_result.unmatched)
+    excluded_html = _excluded_section(aggregate_result.excluded)
 
     total_people = sum(len(team.members) for team in aggregate_result.teams)
     total_teams = len(aggregate_result.teams)
@@ -99,6 +119,7 @@ def render(aggregate_result, generated_at_str):
     {cards}
   </div>
   {unmatched_html}
+  {excluded_html}
 </main>
 </body>
 </html>

@@ -11,6 +11,7 @@ class Roster:
     alias_lookup: dict    # lowercase alias phrase -> canonical name
     person_to_team: dict  # canonical name -> team index (into teams)
     adjustments: dict     # canonical name -> flat count adjustment (e.g. manual corrections)
+    exclusions: list      # list of {person?, date?, filename_contains?} rules; matching photos never count
 
 
 def load_roster(path: str) -> Roster:
@@ -28,6 +29,7 @@ def load_roster(path: str) -> Roster:
 
     alias_lookup = {alias.lower(): canonical for alias, canonical in data["aliases"].items()}
     adjustments = data.get("adjustments", {})
+    exclusions = data.get("exclusions", [])
 
     return Roster(
         teams=teams,
@@ -35,4 +37,5 @@ def load_roster(path: str) -> Roster:
         alias_lookup=alias_lookup,
         person_to_team=person_to_team,
         adjustments=adjustments,
+        exclusions=exclusions,
     )

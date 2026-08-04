@@ -69,7 +69,8 @@ def main():
 
     print(
         f"Scanned {result.total_scanned} files -> {result.total_after_dedup} unique after dedup "
-        f"-> {result.total_matched} matched, {result.total_unmatched} unmatched"
+        f"-> {result.total_matched} matched, {result.total_unmatched} unmatched, "
+        f"{result.total_excluded} excluded"
     )
     print(f"Wrote {os.path.join(DOCS_DIR, 'index.html')}")
 

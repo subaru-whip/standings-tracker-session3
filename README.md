@@ -40,6 +40,24 @@ Add a new entry to `aliases` any time someone's filenames don't match their
 roster name (check the "Unmatched — needs review" panel on the live page to
 spot these).
 
+## Excluding specific photos from counting
+
+`roster.json` also has an `exclusions` list for standing rules like "never
+count Maddy's EVAC photos from 8/3" — as opposed to `adjustments`, which is a
+one-off flat +/- correction, `exclusions` keeps applying automatically to
+every matching file, past and future:
+
+```json
+"exclusions": [
+  { "person": "Maddy", "date": "8/3", "filename_contains": "evac" }
+]
+```
+
+All present fields in a rule must match (case-insensitive for
+`filename_contains`); omit a field to not filter on it. Excluded files never
+count toward anyone's total, but stay visible on the live page in the
+"Excluded — manual rule" panel for auditing.
+
 ## Running manually
 
 ```
