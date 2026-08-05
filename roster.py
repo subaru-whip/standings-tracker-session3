@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -12,6 +13,7 @@ class Roster:
     person_to_team: dict  # canonical name -> team index (into teams)
     adjustments: dict     # canonical name -> flat count adjustment (e.g. manual corrections)
     exclusions: list      # list of {person?, date?, filename_contains?} rules; matching photos never count
+    late_upload_deadline: Optional[dict]  # {cutoff_hour, timezone} or None to disable the late-upload rule
 
 
 def load_roster(path: str) -> Roster:
@@ -30,6 +32,7 @@ def load_roster(path: str) -> Roster:
     alias_lookup = {alias.lower(): canonical for alias, canonical in data["aliases"].items()}
     adjustments = data.get("adjustments", {})
     exclusions = data.get("exclusions", [])
+    late_upload_deadline = data.get("late_upload_deadline")
 
     return Roster(
         teams=teams,
@@ -38,4 +41,5 @@ def load_roster(path: str) -> Roster:
         person_to_team=person_to_team,
         adjustments=adjustments,
         exclusions=exclusions,
+        late_upload_deadline=late_upload_deadline,
     )

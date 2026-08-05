@@ -17,6 +17,15 @@
   },
   "adjustments": {},
   "exclusions": [
-    { "person": "Maddy", "date": "8/3", "filename_contains": "evac" }
-  ]
+    { "person": "Maddy", "date": "8/3", "filename_contains": "evac" },
+    {
+      "person": "Maddy", "date": "1/31", "filename_contains": "evac",
+      "note": "camera clock was wrong (stamped 2023-01-31); actually uploaded night of 8/4, after the noon deadline. Manually reviewed and confirmed excluded 2026-08-05."
+    }
+  ],
+  "late_upload_deadline": {
+    "cutoff_hour": 12,
+    "timezone": "America/New_York",
+    "effective_from": "2026-08-05T14:56:38-04:00"
+  }
 }

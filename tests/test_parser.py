@@ -33,6 +33,11 @@ class TestParser(unittest.TestCase):
         self.assertEqual(p.department, "Bunk")
         self.assertEqual(p.date, "8/1")
         self.assertTrue(p.date_from_filename)
+        self.assertEqual(p.filename_date, datetime.date(2026, 8, 1))
+
+    def test_filename_date_is_none_without_leading_upload_date(self):
+        p = self.parse("7.13 - Tom - Skatepark IMG_0001.jpg")
+        self.assertIsNone(p.filename_date)
 
     def test_mismatched_embedded_date_is_ignored_in_favor_of_upload_date(self):
         p = self.parse("2026-08-01 - 7.15 - Norman - Bunk IMG_9999.jpeg")

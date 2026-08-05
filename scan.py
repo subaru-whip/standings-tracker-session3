@@ -70,9 +70,18 @@ def main():
     print(
         f"Scanned {result.total_scanned} files -> {result.total_after_dedup} unique after dedup "
         f"-> {result.total_matched} matched, {result.total_unmatched} unmatched, "
-        f"{result.total_excluded} excluded"
+        f"{result.total_excluded} excluded, {result.total_late} late, {result.total_flagged} flagged"
     )
     print(f"Wrote {os.path.join(DOCS_DIR, 'index.html')}")
+
+    if result.flagged:
+        print()
+        print(f"⚠ {result.total_flagged} file(s) FLAGGED for manual review — filename date doesn't")
+        print("  match the year they were actually uploaded (likely a bad camera clock or similar).")
+        print("  Not counted toward anyone's total yet. Review and either fix the date, or add an")
+        print("  entry to roster.json's \"exclusions\" once you've confirmed what to do with them:")
+        for photo in result.flagged:
+            print(f"    {photo.filename}  (person={photo.person}, filename_date={photo.filename_date})")
 
     if args.publish:
         publish(PROJECT_ROOT, generated_at_str)

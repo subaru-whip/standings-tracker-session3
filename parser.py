@@ -4,6 +4,7 @@ No filesystem or git access happens here, which keeps this module fully
 unit-testable against literal filename strings (see tests/test_parser.py).
 """
 
+import datetime
 import os
 import re
 from dataclasses import dataclass
@@ -43,6 +44,8 @@ class ParsedPhoto:
     date: str                    # "M/D" display string
     date_from_filename: bool
     dedup_key: tuple
+    filename_date: Optional[datetime.date]  # real calendar date from the leading upload-date stamp, or None
+    mtime: float                  # filesystem mtime; the actual moment this file landed in the Uploaded folder
 
 
 def _normalize(text: str) -> str:
@@ -63,11 +66,18 @@ def parse_filename(filename: str, roster: Roster, mtime: float) -> ParsedPhoto:
     blob = cleaned_stem[: media_match.start()] if media_match else cleaned_stem
     blob = blob.strip(" -")
 
+    filename_date = None
+
     upload_date_match = UPLOAD_DATE_RE.match(blob)
     if upload_date_match:
-        month, day = int(upload_date_match.group(2)), int(upload_date_match.group(3))
+        year, month, day = (
+            int(upload_date_match.group(1)),
+            int(upload_date_match.group(2)),
+            int(upload_date_match.group(3)),
+        )
         date_str = f"{month}/{day}"
         date_from_filename = True
+        filename_date = datetime.date(year, month, day)
         blob = blob[upload_date_match.end():]
         blob = DATE_RE.sub(" ", blob)  # scrub any other date-looking text; it's not trusted
     else:
@@ -78,8 +88,6 @@ def parse_filename(filename: str, roster: Roster, mtime: float) -> ParsedPhoto:
             date_from_filename = True
             blob = blob[: date_match.start()] + blob[date_match.end():]
         else:
-            import datetime
-
             dt = datetime.datetime.fromtimestamp(mtime)
             date_str = f"{dt.month}/{dt.day}"
             date_from_filename = False
@@ -123,4 +131,6 @@ def parse_filename(filename: str, roster: Roster, mtime: float) -> ParsedPhoto:
         date=date_str,
         date_from_filename=date_from_filename,
         dedup_key=dedup_key,
+        filename_date=filename_date,
+        mtime=mtime,
     )
