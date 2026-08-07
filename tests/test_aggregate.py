@@ -13,7 +13,7 @@ from roster import Roster
 EASTERN = ZoneInfo("America/New_York")
 
 
-def make_roster(exclusions=None, late_upload_deadline=None):
+def make_roster(exclusions=None, late_upload_deadline=None, flagged_overrides=None):
     return Roster(
         teams=[["Maddy", "Glenn"]],
         name_lookup={"maddy": "Maddy", "glenn": "Glenn"},
@@ -22,6 +22,7 @@ def make_roster(exclusions=None, late_upload_deadline=None):
         adjustments={},
         exclusions=exclusions or [],
         late_upload_deadline=late_upload_deadline,
+        flagged_overrides=flagged_overrides or [],
     )
 
 
@@ -245,6 +246,37 @@ class TestAggregateFlaggedDates(unittest.TestCase):
         result = aggregate([photo], roster)
         self.assertEqual(result.total_late, 1)
         self.assertEqual(result.total_flagged, 0)
+
+
+class TestAggregateFlaggedOverrides(unittest.TestCase):
+    def test_matching_override_counts_normally_despite_bad_date(self):
+        roster = make_roster(
+            late_upload_deadline=DEADLINE,
+            flagged_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
+        )
+        photo = make_photo(
+            "2015-02-13 - Maddy Nash - Skatepark P1260057 copy.JPG", "Maddy", "2/13",
+            filename_date=datetime.date(2015, 2, 13),
+            mtime=eastern_mtime(2026, 8, 6, 10, 0),
+        )
+        result = aggregate([photo], roster)
+        self.assertEqual(result.total_flagged, 0)
+        self.assertEqual(result.total_late, 0)
+        self.assertEqual(result.teams[0].counts["Maddy"], 1)
+
+    def test_non_matching_override_still_gets_flagged(self):
+        roster = make_roster(
+            late_upload_deadline=DEADLINE,
+            flagged_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
+        )
+        photo = make_photo(
+            "2015-02-13 - Maddy Nash - EVAC P9999999.JPG", "Maddy", "2/13",
+            filename_date=datetime.date(2015, 2, 13),
+            mtime=eastern_mtime(2026, 8, 6, 10, 0),
+        )
+        result = aggregate([photo], roster)
+        self.assertEqual(result.total_flagged, 1)
+        self.assertEqual(result.teams[0].counts["Maddy"], 0)
 
 
 if __name__ == "__main__":

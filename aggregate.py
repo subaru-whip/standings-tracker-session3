@@ -51,7 +51,7 @@ def _is_excluded(photo: ParsedPhoto, exclusions: list) -> bool:
     return any(_rule_matches(photo, rule) for rule in exclusions)
 
 
-def _upload_status(photo: ParsedPhoto, deadline_config: dict) -> str:
+def _upload_status(photo: ParsedPhoto, deadline_config: dict, flagged_overrides: list) -> str:
     """Returns "on_time", "late", or "flagged" relative to noon-the-next-day
     (or whatever cutoff_hour/timezone is configured) after the photo's filename date.
 
@@ -60,9 +60,11 @@ def _upload_status(photo: ParsedPhoto, deadline_config: dict) -> str:
     "on_time". A filename_date in a different year than the real upload (mtime) is
     almost certainly a bad date (e.g. a camera with its clock set wrong) rather than
     a genuinely years-late upload — those get "flagged" for manual review instead of
-    being auto-excluded as "late". Photos uploaded before deadline_config's
-    "effective_from" are grandfathered in as "on_time" — the deadline only applies
-    to photos landing in the folder from that point forward.
+    being auto-excluded as "late", unless a flagged_overrides rule says it's already
+    been reviewed and confirmed fine (counts normally despite the bad date). Photos
+    uploaded before deadline_config's "effective_from" are grandfathered in as
+    "on_time" — the deadline only applies to photos landing in the folder from that
+    point forward.
     """
     if deadline_config is None or photo.filename_date is None:
         return "on_time"
@@ -74,6 +76,8 @@ def _upload_status(photo: ParsedPhoto, deadline_config: dict) -> str:
         return "on_time"
 
     if photo.filename_date.year != uploaded_at.year:
+        if any(_rule_matches(photo, rule) for rule in flagged_overrides):
+            return "on_time"
         return "flagged"
     cutoff_hour = deadline_config.get("cutoff_hour", 12)
     deadline = datetime.datetime(
@@ -106,7 +110,7 @@ def aggregate(photos: list, roster: Roster) -> AggregateResult:
         if _is_excluded(photo, roster.exclusions):
             excluded.append(photo)
             continue
-        status = _upload_status(photo, roster.late_upload_deadline)
+        status = _upload_status(photo, roster.late_upload_deadline, roster.flagged_overrides)
         if status == "late":
             late.append(photo)
         elif status == "flagged":

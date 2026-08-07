@@ -29,5 +29,11 @@
     "cutoff_hour": 12,
     "timezone": "America/New_York",
     "effective_from": "2026-08-05T14:56:38-04:00"
-  }
+  },
+  "flagged_overrides": [
+    {
+      "person": "Maddy", "date": "2/13", "filename_contains": "skatepark",
+      "note": "camera clock stamped 2015-02-13; confirmed not actually late, counts normally. Reviewed 2026-08-07."
+    }
+  ]
 }

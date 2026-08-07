@@ -14,6 +14,7 @@ class Roster:
     adjustments: dict     # canonical name -> flat count adjustment (e.g. manual corrections)
     exclusions: list      # list of {person?, date?, filename_contains?} rules; matching photos never count
     late_upload_deadline: Optional[dict]  # {cutoff_hour, timezone} or None to disable the late-upload rule
+    flagged_overrides: list  # list of {person?, date?, filename_contains?} rules; reviewed OK despite a bad filename date, count normally
 
 
 def load_roster(path: str) -> Roster:
@@ -33,6 +34,7 @@ def load_roster(path: str) -> Roster:
     adjustments = data.get("adjustments", {})
     exclusions = data.get("exclusions", [])
     late_upload_deadline = data.get("late_upload_deadline")
+    flagged_overrides = data.get("flagged_overrides", [])
 
     return Roster(
         teams=teams,
@@ -42,4 +44,5 @@ def load_roster(path: str) -> Roster:
         adjustments=adjustments,
         exclusions=exclusions,
         late_upload_deadline=late_upload_deadline,
+        flagged_overrides=flagged_overrides,
     )
