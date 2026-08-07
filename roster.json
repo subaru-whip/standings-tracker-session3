@@ -34,6 +34,10 @@
     {
       "person": "Maddy", "date": "2/13", "filename_contains": "skatepark",
       "note": "camera clock stamped 2015-02-13; confirmed not actually late, counts normally. Reviewed 2026-08-07."
+    },
+    {
+      "person": "Maddy", "date": "2/3", "filename_contains": "evac",
+      "note": "camera clock stamped 2023-02-03; confirmed not actually late, counts normally. Reviewed 2026-08-07."
     }
   ]
 }
