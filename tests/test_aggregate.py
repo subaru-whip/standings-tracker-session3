@@ -13,7 +13,7 @@ from roster import Roster
 EASTERN = ZoneInfo("America/New_York")
 
 
-def make_roster(exclusions=None, late_upload_deadline=None, flagged_overrides=None):
+def make_roster(exclusions=None, late_upload_deadline=None, reviewed_overrides=None):
     return Roster(
         teams=[["Maddy", "Glenn"]],
         name_lookup={"maddy": "Maddy", "glenn": "Glenn"},
@@ -22,7 +22,7 @@ def make_roster(exclusions=None, late_upload_deadline=None, flagged_overrides=No
         adjustments={},
         exclusions=exclusions or [],
         late_upload_deadline=late_upload_deadline,
-        flagged_overrides=flagged_overrides or [],
+        reviewed_overrides=reviewed_overrides or [],
     )
 
 
@@ -248,11 +248,11 @@ class TestAggregateFlaggedDates(unittest.TestCase):
         self.assertEqual(result.total_flagged, 0)
 
 
-class TestAggregateFlaggedOverrides(unittest.TestCase):
+class TestAggregateReviewedOverrides(unittest.TestCase):
     def test_matching_override_counts_normally_despite_bad_date(self):
         roster = make_roster(
             late_upload_deadline=DEADLINE,
-            flagged_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
+            reviewed_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
         )
         photo = make_photo(
             "2015-02-13 - Maddy Nash - Skatepark P1260057 copy.JPG", "Maddy", "2/13",
@@ -267,7 +267,7 @@ class TestAggregateFlaggedOverrides(unittest.TestCase):
     def test_non_matching_override_still_gets_flagged(self):
         roster = make_roster(
             late_upload_deadline=DEADLINE,
-            flagged_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
+            reviewed_overrides=[{"person": "Maddy", "date": "2/13", "filename_contains": "skatepark"}],
         )
         photo = make_photo(
             "2015-02-13 - Maddy Nash - EVAC P9999999.JPG", "Maddy", "2/13",
@@ -276,6 +276,36 @@ class TestAggregateFlaggedOverrides(unittest.TestCase):
         )
         result = aggregate([photo], roster)
         self.assertEqual(result.total_flagged, 1)
+        self.assertEqual(result.teams[0].counts["Maddy"], 0)
+
+    def test_matching_override_counts_normally_despite_genuine_lateness(self):
+        # Pre-approved late upload: same-year filename_date, genuinely past the
+        # deadline, but a reviewed_overrides rule says it's fine anyway.
+        roster = make_roster(
+            late_upload_deadline=DEADLINE,
+            reviewed_overrides=[{"person": "Maddy", "date": "8/6", "filename_contains": "evac"}],
+        )
+        photo = make_photo(
+            "2026-08-06 - Maddy - EVAC IMG_1.jpg", "Maddy", "8/6",
+            filename_date=datetime.date(2026, 8, 6),
+            mtime=eastern_mtime(2026, 8, 8, 9, 0),  # well past noon 8/7
+        )
+        result = aggregate([photo], roster)
+        self.assertEqual(result.total_late, 0)
+        self.assertEqual(result.teams[0].counts["Maddy"], 1)
+
+    def test_non_matching_late_photo_still_gets_excluded_as_late(self):
+        roster = make_roster(
+            late_upload_deadline=DEADLINE,
+            reviewed_overrides=[{"person": "Maddy", "date": "8/6", "filename_contains": "evac"}],
+        )
+        photo = make_photo(
+            "2026-08-06 - Maddy - Bunk IMG_2.jpg", "Maddy", "8/6",
+            filename_date=datetime.date(2026, 8, 6),
+            mtime=eastern_mtime(2026, 8, 8, 9, 0),
+        )
+        result = aggregate([photo], roster)
+        self.assertEqual(result.total_late, 1)
         self.assertEqual(result.teams[0].counts["Maddy"], 0)
 
 
