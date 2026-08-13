@@ -8,8 +8,10 @@ Usage:
 
 import argparse
 import datetime
+import json
 import os
 import sys
+from collections import Counter
 
 from aggregate import aggregate
 from parser import parse_filename
@@ -20,6 +22,7 @@ from roster import load_roster
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROSTER_PATH = os.path.join(PROJECT_ROOT, "roster.json")
 DOCS_DIR = os.path.join(PROJECT_ROOT, "docs")
+LATE_STATE_PATH = os.path.join(PROJECT_ROOT, ".late_state.json")
 
 SOURCE_DIR = (
     "/Users/digi3dprinter/Dropbox/File requests/Session 3 Submissions - 2026/"
@@ -27,6 +30,18 @@ SOURCE_DIR = (
 )
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic"}
+
+
+def load_previously_seen_late(path):
+    if not os.path.isfile(path):
+        return set()
+    with open(path, encoding="utf-8") as f:
+        return set(json.load(f))
+
+
+def save_seen_late(path, filenames):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(sorted(filenames), f, indent=2)
 
 
 def collect_filenames(source_dir):
@@ -73,6 +88,30 @@ def main():
         f"{result.total_excluded} excluded, {result.total_late} late, {result.total_flagged} flagged"
     )
     print(f"Wrote {os.path.join(DOCS_DIR, 'index.html')}")
+
+    if result.excluded:
+        print()
+        print(f"{result.total_excluded} file(s) EXCLUDED (manually reviewed, in roster.json \"exclusions\"):")
+        for person, count in Counter(p.person for p in result.excluded).most_common():
+            print(f"    {person}: {count}")
+
+    if result.late:
+        current_late_filenames = {p.filename for p in result.late}
+        previously_seen_late = load_previously_seen_late(LATE_STATE_PATH)
+        newly_late = current_late_filenames - previously_seen_late
+        save_seen_late(LATE_STATE_PATH, current_late_filenames)
+
+        print()
+        print(f"{result.total_late} file(s) LATE (past the noon-next-day deadline), not counted:")
+        for person, count in Counter(p.person for p in result.late).most_common():
+            print(f"    {person}: {count}")
+        if newly_late:
+            print(f"  NEW since last run: {len(newly_late)}")
+            newly_late_people = Counter(p.person for p in result.late if p.filename in newly_late)
+            for person, count in newly_late_people.most_common():
+                print(f"    {person}: {count}")
+    else:
+        save_seen_late(LATE_STATE_PATH, set())
 
     if result.flagged:
         print()
