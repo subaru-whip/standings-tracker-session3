@@ -54,6 +54,10 @@
     {
       "person": "Maddy", "date": "2/5", "filename_contains": "bunk",
       "note": "camera clock stamped 2023-02-05; Maddy Nash is her full name, confirmed not actually late, counts normally. Reviewed 2026-08-08."
+    },
+    {
+      "person": "Talia", "date": "8/12",
+      "note": "given explicit permission to submit late this batch; counts normally. Reviewed 2026-08-13."
     }
   ]
 }
